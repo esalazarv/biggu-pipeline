@@ -19,6 +19,14 @@ class Baz:
         signs = '!!!' if exclamation else ''
         return "Hello " + name + signs
 
+class Biz:
+    def handle(self, value, next):
+        return next(value + " biz")
+
+class Buz:
+    def handle(self, value, next):
+        return next(value + " buz")              
+
 class TestPipeline(unittest.TestCase):
 
     @staticmethod
@@ -135,3 +143,12 @@ class TestPipeline(unittest.TestCase):
         self.assertTrue(callable(wrapper))
         self.assertTrue(callable(closure))
         self.assertEqual(result, 'Hello biggu from lambda')
+
+    def test_pipeline_flow(self):
+        pipeline = Pipeline(self.app()) 
+        result = pipeline.send("Hello").through([
+            Biz,
+            Buz
+        ]).then(lambda value: value + " end")
+        self.assertEqual(result, "Hello biz buz end")
+

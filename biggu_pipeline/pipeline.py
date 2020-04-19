@@ -1,4 +1,5 @@
 import inspect
+import functools
 
 class Pipeline:
     def __init__(self, container):
@@ -18,6 +19,15 @@ class Pipeline:
     def via(self, method):
         self._method = method
         return self
+
+    def then(self, destination):
+        pipes = [*self.pipes()]
+        pipes.reverse()
+        pipeline = functools.reduce(self.carry(), pipes, self.prepare_destination(destination))
+        return pipeline(self.passable())
+
+    def then_return(self):
+        return self.then(lambda passable: passable)
     
     def prepare_destination(self, destination):
         def wrapper(passable):
